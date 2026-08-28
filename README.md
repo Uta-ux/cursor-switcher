@@ -35,7 +35,7 @@ sudo apt install python3-gi gir1.2-gtk-4.0 gir1.2-adw-1
 ## Instalação
 
 ```bash
-git clone https://github.com/SEU_USUARIO/cursor-switcher.git
+git clone https://github.com/Uta-ux/cursor-switcher.git
 cd cursor-switcher
 ./install.sh
 ```
