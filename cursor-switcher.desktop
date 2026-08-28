@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Trocador de Cursor
+GenericName=Cursor Theme Switcher
+Comment=Escolha e aplique temas de cursor do mouse
+Exec=cursor-switcher
+Icon=input-mouse
+Terminal=false
+Categories=Settings;DesktopSettings;GTK;
+Keywords=cursor;mouse;ponteiro;tema;theme;
+StartupNotify=true
+StartupWMClass=org.beicom.CursorSwitcher
