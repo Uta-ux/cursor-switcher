@@ -53,4 +53,4 @@ permite a pré-visualização fiel sem depender de biblioteca externa.
 
 ## Licença
 
-Sem licença definida ainda.
+[MIT](LICENSE).
