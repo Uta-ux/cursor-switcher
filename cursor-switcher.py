@@ -31,6 +31,7 @@ INSTALL_DIR = Path.home() / ".local/share/icons"
 
 SIZES = [
     ("Padrão", 24),
+    ("Pequeno", 28),
     ("Médio", 32),
     ("Grande", 48),
     ("Maior", 64),
