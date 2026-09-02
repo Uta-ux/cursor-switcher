@@ -19,7 +19,7 @@ tema na hora.
   `~/.local/share/icons`
 - Remove temas instalados pelo usuário
 
-Tamanhos disponíveis: 24, 32, 48, 64 e 96 px.
+Tamanhos disponíveis: 24, 28, 32, 38, 48, 64 e 96 px.
 
 ## Requisitos
 

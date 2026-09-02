@@ -33,6 +33,7 @@ SIZES = [
     ("Padrão", 24),
     ("Pequeno", 28),
     ("Médio", 32),
+    ("Médio-Grande", 38),
     ("Grande", 48),
     ("Maior", 64),
     ("Máximo", 96),
