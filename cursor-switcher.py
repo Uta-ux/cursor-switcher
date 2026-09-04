@@ -35,8 +35,6 @@ SIZES = [
     ("Médio", 32),
     ("Médio-Grande", 38),
     ("Grande", 48),
-    ("Maior", 64),
-    ("Máximo", 96),
 ]
 
 # Grupos de nomes alternativos: o primeiro que existir no tema e usado no preview.
