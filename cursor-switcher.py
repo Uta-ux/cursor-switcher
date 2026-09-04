@@ -15,7 +15,7 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, GdkPixbuf, Gio, GLib, Gtk  # noqa: E402
+from gi.repository import Adw, Gdk, GdkPixbuf, Gio, GLib, Gtk, Pango  # noqa: E402
 
 APP_ID = "org.beicom.CursorSwitcher"
 IFACE = "org.gnome.desktop.interface"
@@ -235,6 +235,15 @@ def current_settings():
 
 # ------------------------------------------------------------- Instalacao ----
 
+def remove_theme(theme: Theme) -> None:
+    """Apaga do disco um tema instalado pelo usuário (nunca os de sistema)."""
+    if not theme.removable:
+        raise ValueError("Temas de sistema não podem ser removidos.")
+    if not theme.path.exists():
+        return
+    shutil.rmtree(theme.path)
+
+
 def install_archive(archive: Path) -> list:
     """Extrai um arquivo baixado e instala os temas de cursor que houver dentro."""
     name = archive.name.lower()
@@ -313,6 +322,14 @@ class Window(Adw.ApplicationWindow):
         self.apply_btn.set_sensitive(False)
         self.apply_btn.connect("clicked", self.on_apply)
         header.pack_end(self.apply_btn)
+
+        self.remove_btn = Gtk.Button(label="Remover")
+        self.remove_btn.add_css_class("destructive-action")
+        self.remove_btn.set_tooltip_text(
+            "Remover o tema selecionado (só temas instalados pelo usuário)")
+        self.remove_btn.set_sensitive(False)
+        self.remove_btn.connect("clicked", self.on_remove)
+        header.pack_end(self.remove_btn)
         view.add_top_bar(header)
 
         body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -391,14 +408,15 @@ class Window(Adw.ApplicationWindow):
 
             title_row = Gtk.Box(spacing=6, margin_top=2)
             title = Gtk.Label(label=theme.name, xalign=0, hexpand=True,
-                              ellipsize=3, css_classes=["heading"])
+                              ellipsize=Pango.EllipsizeMode.END, css_classes=["heading"])
             title_row.append(title)
             if theme.dir_name == applied_theme:
                 title_row.append(Gtk.Label(label="atual", css_classes=["badge"],
                                            valign=Gtk.Align.CENTER))
             card.append(title_row)
             card.append(Gtk.Label(label=f"{theme.dir_name} · {theme.location}",
-                                  xalign=0, ellipsize=3, css_classes=["dim"]))
+                                  xalign=0, ellipsize=Pango.EllipsizeMode.END,
+                                  css_classes=["dim"]))
 
             child = Gtk.FlowBoxChild(child=card)
             child.theme = theme
@@ -418,6 +436,8 @@ class Window(Adw.ApplicationWindow):
         children = self.flow.get_selected_children()
         self.selected = children[0].theme if children else None
         self.apply_btn.set_sensitive(self.selected is not None)
+        self.remove_btn.set_sensitive(
+            self.selected is not None and self.selected.removable)
 
     def on_size_toggled(self, button, value):
         if button.get_active() and value != self.size:
@@ -436,6 +456,37 @@ class Window(Adw.ApplicationWindow):
             title=f"{self.selected.name} aplicado em {self.size}px "
                   "(apps já abertos podem precisar reiniciar)"))
         self.reload()
+
+    def on_remove(self, *_):
+        if not self.selected:
+            return
+        theme = self.selected
+        dialog = Adw.MessageDialog(
+            transient_for=self,
+            heading=f"Remover “{theme.name}”?",
+            body="O tema será apagado do disco de forma permanente.",
+        )
+        dialog.add_response("cancelar", "Cancelar")
+        dialog.add_response("remover", "Remover")
+        dialog.set_response_appearance(
+            "remover", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.connect("response", self._remove_confirmed, theme)
+        dialog.present()
+
+    def _remove_confirmed(self, dialog, response, theme):
+        if response != "remover":
+            return
+        was_applied = theme.dir_name == current_settings()[0]
+        try:
+            remove_theme(theme)
+        except Exception as exc:  # noqa: BLE001
+            self.toasts.add_toast(Adw.Toast(title=f"Falhou: {exc}"))
+            return
+        if was_applied:
+            apply_theme("Adwaita", 24)
+        _texture_cache.clear()
+        self.reload()
+        self.toasts.add_toast(Adw.Toast(title=f"Removido: {theme.name}"))
 
     def on_install(self, *_):
         dialog = Gtk.FileDialog(title="Escolha o tema baixado")
